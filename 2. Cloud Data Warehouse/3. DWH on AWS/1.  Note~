@@ -1,0 +1,46 @@
+operations data sources => ETL(scheduler, ..) => Dimensional Model(DWH) => analytics(Tableau)
+
+DHW => Cloud(AWS) => a) EC2=> self managed(Cassandra, Postgres, ..)
+                     b) Cloud managed => Redshift, S3, ...=> way less staff = low Operating Expense
+
+1) 
+Redshift: a) columns oriented storage(much faster than row oriented traditional ones)
+          b) Modified Potsgres
+          C) Massively Parallel Processing: queries run in parallel
+          D) Each node = EC2 instance
+          E) Number of slices= Number of parallelism
+          F) All data is stored on S3
+          G) S3 offers a very reliable, scalable and worry-free storage solution, but it only offers storage not processing power.
+
+2)                                                                    split the table            use copy command
+Data source(Cassandra, redshift, dynamodb, .. anything) => ETL(on EC2)=============> S3(Staging)==========> DWH(Redshift)=> OLAP Cubes(Anything) => analytics(bi tools)
+ 
+Copy: Data ingestions(putting data in SQL): use Copy command= Bulk Insertion( vs row by row looping)
+
+Split the Table:  But before copy command, split the table into multiple files => Each Redshift slice will act as a separate worker and will use ingest the split of a file in parallel, so the process will complete much faster
+
+
+On Reshift: a)  COPY table1 FROM 's3://' Credentials gzip DELMITER;
+             
+            or
+ 
+            b)  COPY table1 FROM 's3://' IAM_ROLE '...' manifest;   => manifest file
+            c) UNLOAD ('select * from table1 limit 10') To 's3://...'   iam_role   '....'
+
+- Usually you'll want to use S3 as a staging area, but for very small data, you might want to copy it directly from the EC2 machine.
+
+3) Infracstucture As a Code: using codes to access machines, databases and so on using Amazon SDK instead of clicking around!
+                           Advantage: Sharing, Reproducibility, Multiple Deployments & Maintainability are all advantages of IaC.
+
+4) I_Am: DWHadmin
+   access key:  AKIA2V4R2TETRIFECIQK   
+   secret key: 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
+
+5) Redshift table optimization(speed up query) when the table is partitioned(broken into pieces): 
+  a) Distribution style - Even: for Large tables => Evenly divide the table into number of CPU's => But the JOIN will be very slow
+                        - All: for small tables => overcomes JOIN problem, the table will be replicated in all slices.
+                        - Auto: leave the decision to Redshift
+                        - Key: rows having a same values are placed in the same slice. => can lead to skewed tables.
+
+  b) Sorting key        - use one columns as sort key. => Order_Date integer sortkey => improves query performance!
+

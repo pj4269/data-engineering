@@ -1,0 +1,248 @@
+from datetime import datetime
+from datetime import timedelta
+import os
+from airflow import DAG
+from airflow.operators.dummy_operator import DummyOperator
+                               
+from helpers import SqlQueries
+from airflow.contrib.hooks.aws_hook import AwsHook
+from airflow.hooks.postgres_hook import PostgresHook
+from airflow.operators.postgres_operator import PostgresOperator
+from airflow.operators.python_operator import PythonOperator
+
+#from airflow.operators import  * 
+#from airflow.operators import  (StageToRedshiftOperator)
+
+from operators.stage_redshift import StageToRedshiftOperator
+from operators.load_fact import LoadFactOperator
+from operators.load_dimension import LoadDimensionOperator
+from operators.data_quality import DataQualityOperator
+
+# new
+import create_tables
+import sql_queries
+
+
+AWS_KEY = os.environ.get('AWS_KEY')
+AWS_SECRET = os.environ.get('AWS_SECRET')
+
+default_args = {
+    'owner': 'udacity',
+    'start_date': datetime(2019, 1, 12),
+    'depends_on_past': False,
+    'retries':3,
+    'catchup':False, 
+    'retry_delay': timedelta(minutes=5),
+    'email_on_retry': False
+}
+
+dag = DAG('udac_example_dag',
+          default_args=default_args,
+          description='Load and transform data in Redshift with Airflow',
+          schedule_interval='0 * * * *'
+        )
+
+start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
+
+# new 1.
+create_artists_table = PostgresOperator(
+    task_id="create_artists_table",
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql=create_tables.CREATE_artists_TABLE_SQL
+)
+# new 2.
+create_songplays_table = PostgresOperator(
+    task_id="create_songplays_table",
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql= create_tables.CREATE_songplays_TABLE_SQL 
+)
+
+# new 3.
+create_songs_table = PostgresOperator(
+    task_id="create_songs_table",
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql= create_tables.CREATE_songs_TABLE_SQL
+)
+
+# new 4.
+create_users_table = PostgresOperator(
+    task_id="create_users_table",
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql= create_tables.CREATE_users_TABLE_SQL
+)
+
+# new 5.
+create_time_table = PostgresOperator(
+    task_id="create_time_table",
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql= create_tables.CREATE_time_TABLE_SQL
+)
+
+# new 6.
+create_staging_events_table = PostgresOperator(
+    task_id="create_staging_events_table",
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql= create_tables.CREATE_staging_events_TABLE_SQL
+)
+# new 7.
+create_staging_songs_table = PostgresOperator(
+    task_id="create_staging_songs_table",
+    dag=dag,
+    postgres_conn_id="redshift",
+    sql= create_tables.CREATE_staging_songs_TABLE_SQL
+)
+
+
+stage_events_to_redshift = StageToRedshiftOperator(
+    task_id='Stage_events',
+    dag=dag,
+    table="staging_events",
+    redshift_conn_id="redshift",
+    aws_credentials_id="aws_credentials",
+    s3_bucket="udacity-dend",
+    s3_key="log_data/2018/11/2018-11-01-events.json"
+)
+
+stage_songs_to_redshift = StageToRedshiftOperator(
+    task_id='Stage_songs',
+    dag=dag,
+    table="staging_songs",
+    redshift_conn_id="redshift",
+    aws_credentials_id="aws_credentials",
+    s3_bucket="udacity-dend",
+    s3_key="song_data/A/B/C/TRABCEI128F424C983.json"
+)
+
+
+
+load_songplays_table = LoadFactOperator(
+    task_id='Load_songplays_fact_table',
+    dag=dag,
+    redshift_conn_id="redshift",
+    destination_table="songplays"
+)
+
+
+
+load_user_dimension_table = LoadDimensionOperator(
+    task_id='Load_user_dim_table',
+    dag=dag, 
+    redshift_conn_id="redshift",
+    sql_template = sql_queries.user_table_insert
+)
+
+
+
+load_song_dimension_table = LoadDimensionOperator(
+    task_id='Load_song_dim_table',
+    dag=dag, 
+    redshift_conn_id="redshift",
+    sql_template = sql_queries.song_table_insert
+)
+
+
+
+load_artist_dimension_table = LoadDimensionOperator(
+    task_id='Load_artist_dim_table',
+    dag=dag, 
+    redshift_conn_id="redshift",
+    sql_template = sql_queries.artist_table_insert
+)
+
+load_time_dimension_table = LoadDimensionOperator(
+    task_id='Load_time_dim_table',
+    dag=dag, 
+    redshift_conn_id="redshift",
+    sql_template = sql_queries.time_table_insert
+)
+
+
+
+#run_quality_checks = DataQualityOperator(
+#    task_id='Run_data_quality_checks',
+#    dag=dag
+#)
+
+
+#
+#  Data quality checks on tables
+#
+# Here
+
+run_quality_checks_users = DataQualityOperator(
+    task_id="check_users_data",
+    dag=dag,
+    redshift_conn_id="redshift",
+    table="users"
+)
+
+run_quality_checks_songs = DataQualityOperator(
+    task_id="check_songs_data",
+    dag=dag,
+    redshift_conn_id="redshift",
+    table="songs"
+)
+
+run_quality_checks_artists = DataQualityOperator(
+    task_id="check_artists_data",
+    dag=dag,
+    redshift_conn_id="redshift",
+    table="artists"
+)
+
+
+run_quality_checks_time = DataQualityOperator(
+    task_id="check_time_data",
+    dag=dag,
+    redshift_conn_id="redshift",
+    table="time"
+)
+
+end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
+
+# Configure Task Dependencies
+# new
+
+
+
+start_operator >> create_artists_table
+start_operator >> create_songplays_table
+start_operator >> create_songs_table 
+start_operator >> create_users_table
+start_operator >> create_time_table
+start_operator >> create_staging_events_table
+start_operator >> create_staging_songs_table
+#start_operator >> stage_events_to_redshift
+#start_operator >> stage_songs_to_redshift
+
+create_staging_events_table >> stage_events_to_redshift
+create_staging_songs_table >> stage_songs_to_redshift
+
+stage_events_to_redshift >> load_songplays_table
+stage_songs_to_redshift >> load_songplays_table
+
+load_songplays_table >> load_user_dimension_table
+load_songplays_table >> load_song_dimension_table
+load_songplays_table >> load_artist_dimension_table
+load_songplays_table >> load_time_dimension_table
+
+
+
+load_user_dimension_table >> run_quality_checks_users
+load_song_dimension_table >> run_quality_checks_songs
+load_artist_dimension_table >> run_quality_checks_artists
+load_time_dimension_table >> run_quality_checks_time
+
+run_quality_checks_users >>  end_operator
+run_quality_checks_songs >> end_operator
+run_quality_checks_artists >> end_operator
+run_quality_checks_time >> end_operator
+
+
+

@@ -1,0 +1,13 @@
+1) Kimball's Bus
+2) Independent Data Marts
+3) Inmon's CIF
+4) Hybrid Bus and CIF
+
+1) source data => 1 big ETL for all data (never exposed to end user) => departments fetch data
+  - easy to use, fast queries
+  - each business department organizes data according to its need.
+2)source data =>  Independent ETL for specific departments need  (Ad hoc based )
+   - not encouraged!
+3) source data => Enterprise warehouse for all the data(normalized here)  => departments fetch data
+
+4) mixture of 1 and 3.

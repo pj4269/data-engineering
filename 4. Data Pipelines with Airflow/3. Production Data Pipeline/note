@@ -1,0 +1,3 @@
+Refactor dag => breaking down all the functions in dag into a separate pythonoperators (or any other operator). 
+
+Subdags: commonly repeated sub tasks within a dag. Generally it is not necessary as it makes it harder to read the code. 

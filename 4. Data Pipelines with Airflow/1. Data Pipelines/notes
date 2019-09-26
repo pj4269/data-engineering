@@ -1,0 +1,122 @@
+To start AIRFLOW: /opt/airflow/start.sh => ACCESS AIRFLOW button
+
+1) 
+Pipeline = ETL or ELT.
+
+"ETL is normally a continuous, ongoing process with a well-defined workflow. ETL first extracts data from homogeneous or heterogeneous data sources. Then, data is cleansed, enriched, transformed, and stored either back in the lake or in a data warehouse.
+
+"ELT (Extract, Load, Transform) is a variant of ETL wherein the extracted data is first loaded into the target system. Transformations are performed after the data is loaded into the data warehouse. ELT typically works well when the target system is powerful enough to handle transformations. Analytical databases like Amazon Redshift and Google BigQ." 
+
+
+S3 = final data store where data might be loaded (e.g. ETL)
+Redshift = data warehouse
+
+
+Directed Acyclic Graphs (DAGs): DAGs are a special subset of graphs in which the edges between nodes have a specific direction, and no cycles exist. When we say “no cycles exist” what we mean is the nodes cant create a path back to themselves.
+Nodes: A step in the data pipeline process.
+Edges: The dependencies or relationships other between nodes.
+
+                     edge(relationship)
+node(s3 to redshift)------- ------> node(redshift analysis)
+
+
+ DAGs have nodes that can connect to multiple edges, the edges between nodes imply a directed relationship, and there are no cycles (the data never touches the same node twice)
+
+Airflow - pipeline +dag based + schedulable
+
+
+dag= DAG('name', start_date)
+
+example: 
+# creating a dag
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+
+
+divvy_dag = DAG(
+    'divvy',
+    description='Analyzes Divvy Bikeshare Data',
+    start_date=datetime(2019, 2, 4),
+    schedule_interval='@daily')
+# operator (task when instantiated)
+task = PythonOperator(
+    task_id=’hello_world’,
+    python_callable=hello_world,
+    dag=divvy_dag)
+
+'''
+Schedules
+Schedules are optional, and may be defined with cron strings or Airflow Presets. Airflow provides the following presets:
+
+@once - Run a DAG once and then never again
+@hourly - Run the DAG every hour
+@daily - Run the DAG every day
+@weekly - Run the DAG every week
+@monthly - Run the DAG every month
+@yearly- Run the DAG every year
+None - Only run the DAG when the user initiates it
+Start Date: If your start date is in the past, Airflow will run your DAG as many times as there are schedule intervals between that start date and the current date.
+
+End Date: Unless you specify an optional end date, Airflow will continue to run your DAGs until you disable or delete the DAG.
+'''
+
+
+2) Operators
+Operators define the atomic steps of work that make up a DAG. Airflow comes with many Operators that can perform common operations. Here are a handful of common ones:
+
+PythonOperator
+PostgresOperator
+RedshiftToS3Operator
+S3ToRedshiftOperator
+BashOperator
+SimpleHttpOperator
+Sensor
+
+
+3) Task Dependencies
+In Airflow DAGs:
+a) 
+Nodes = Tasks
+Edges = Ordering and dependencies between tasks
+Task dependencies can be described programmatically in Airflow using >> and <<   or  'set_downstream' vs 'set_upstream'
+
+a >> b or  a.set_downstream(b) means a comes before b 
+
+Example: 
+hello_world_task = PythonOperator(task_id='hello_world', ...)
+goodbye_world_task = PythonOperator(task_id='goodbye_world', ...)
+
+# Use >> to denote that goodbye_world_task depends on hello_world_task
+hello_world_task >> goodbye_world_task
+hello_world_task.set_downstream(goodbye_world_task)
+
+4) User airflow hooks for a security reason.  => connects to external databases
+
+example: 
+from airf
+low import DAG
+from airflow.hooks.postgres_hook import PostgresHook
+from airflow.operators.python_operator import PythonOperator
+
+def load():
+# Create a PostgresHook option using the `demo` connection
+    db_hook = PostgresHook('demo')
+    df = db_hook.get_pandas_df('SELECT * FROM rides')
+    print(f'Successfully used PostgresHook to return {len(df)} records')
+
+load_task = PythonOperator(task_id=’load’, python_callable=hello_world, ...)
+
+others: 
+HttpHook
+PostgresHook (works with RedShift)
+MySqlHook
+SlackHook
+PrestoHook
+
+
+5) Connections: 
+
+conn_id : aws_credentials
+conn type: amazon web services
+login : access key 
+password: secret key

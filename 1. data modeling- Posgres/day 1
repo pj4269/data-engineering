@@ -1,0 +1,47 @@
+data modeling (iterative process)=> database modeling
+    conceptual => loical => physical
+
+
+A) relational database: rows(tuple=singlr item[john 1987]), cols(attribute=labelled element[name, city]) => unique keys for each row
+                     each entity (product, customer) => a single table
+                     db = schema = collection of tables
+                    => use when data is small
+                    => joins, aggregating, 2dary indexes(for speed)
+                    => ACID transactions = data integrity= Atomicty(whole database is processed or nothing is processed)
+                                                         = consistency
+                                                         = isolation
+                                                         = durability= transactions r saved in case of failure
+                    => can't handle unstructured data: 
+                    => can't do horizontal scalability(adding more machines like nosql)
+
+import psycopg2
+!echo "alter user student createdb;" | sudo -u postgres psql
+# Create a connection to the database
+conn = psycopg2.connect("host=127.0.0.1 dbname=studentdb user=student password=student")
+#Use the connection to get a cursor that can be used to execute queries
+cur = conn.cursor()
+# Set automatic commit to be true so that each action is committed without having to call conn.commit() after each command
+cur.execute("create database mydb")
+...
+
+
+B) NoSQL: Apache Cassandra - data  distributed by partition
+          MongoDB - document store
+          DynamoDB - key value score
+          Apache Hbase
+          NEo4j - graph based
+
+Apache Cassandra: keyspace - collection of tables = db
+                  table - a group of partitions   = table
+                  row - a single item
+                  partition -  a row or rows 
+                  partition key = primary key
+                  row key, col key
+                  designed for ad hoc queries
+
+when to use? 
+- Need to be able to store different data type formats: NoSQL was also created to handle different data configurations: structured, semi-structured, and unstructured data. JSON, XML documents can all be handled easily with NoSQL.
+- large data
+- hor. scalability
+- Need high availability: better back up
+

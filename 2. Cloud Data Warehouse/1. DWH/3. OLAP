@@ -1,0 +1,14 @@
+- data is ready for business users. 
+- OLAP cubes: data organized in understandable multi dimensions
+- Operations on OLAP: 
+  1. roll up = sum, aggregation
+  2. drill down = decompose (e.g decompose revenue by area)
+  3. slicing = where (where month='march')
+  4. dicing = where in ['march', 'april']
+  5. grouping = group by
+  6. CUBE  = GROUP by CUBE (col1, col2) = produces all combinations
+
+OLAP cube technology?
+
+- ROLAP = relational database OLAP =>columnar storage is faster than normal(row) storage!
+

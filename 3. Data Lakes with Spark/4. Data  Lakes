@@ -1,0 +1,5 @@
+Data lakes - raw data(text, xml, json, images, voices) - no purpose  vs data warehouse - data is already structured. 
+           - elt                                                     vs etl
+           - for data scientists, business analysts                  vs business analysts
+           - mixed quality                                           vs high quality
+Data lakes = evolution of data warehouse

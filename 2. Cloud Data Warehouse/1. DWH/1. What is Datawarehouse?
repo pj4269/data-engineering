@@ -1,0 +1,48 @@
+
+1 ) What Is A Data Warehouse? A Business Perspective = operational(find good, make order, ...) + analytical(employeeperformance, sales growth) process
+
+operational Data In(OLTP= online transactional processing) => excellent for operation but for analytics, there' too many joins(too slow for analytics) => that's why  you need to build data warehouses (more than 1 database, technologies)(OLAP online analytical processing) and be ready for analytics  => analytics Out 
+
+
+if OLTP=OLAP, then the queries will be  slow(joins), hard to understand! But for small data, its probsbly ok
+
+- Customers should be able to find goods & make orders
+- Inventory Staff should be able to stock, retrieve, and re-order goods
+- Delivery Staff should be able to pick up & deliver goods
+- HR should be able to assess the performance of sales staff
+- Marketing should be able to see the effect of different sales channels
+- Management should be able to monitor sales growth
+- Ask yourself: Can I build a database to support these activities? Are all of the above questions of the same nature?
+- Let's take a closer look at details that may affect your data infrastructure.
+
+-> Retailer has a nation-wide presence → Scale all the data?
+-> Acquired smaller retailers, brick & mortar shops, online store → Single database? Complexity?
+-> Has support call center & social media accounts → Tabular data?
+-> Customers, Inventory Staff and Delivery staff expect the system to be fast & stable → Performance
+-> HR, Marketing & Sales Reports want a lot information but have not decided yet on everything they need → Clear Requirements?
+
+
+=> maybe one single relational database won’t suffice :)
+
+  a) operational vs analytical process
+
+2) ETL: 
+data source => ETL => dimensional model(mostly databases [high queries, easy to understand]) => data out for analytics(tableau, ..)
+
+3) dimensional model: 
+ 
+ a) Goal: make OLTP more understandable and fast(query performance) => OLAP
+        : make it like Star Schema (easy to understand which one is fact and which ones are dimensional tables. )
+        : fact = quantifiable (duration of a call,customer rating, metrics vs dimension = attributes (who, what, why, when, where, ..store name, customer id)  => but not always clear cut!
+        : fact = numeric and additive => not comment, invoice number(can't be added) but instances of positive feedback from a customer is 
+                                                                                                                     (it is quantifiable!)
+        : dimension => date,  physical location; and goods sold!
+
+ b) Definition:  = data warehouse design:a) bottom-up approach (practice => model): identify the key business processes within a business and modeling and implementing these first before adding additional business processes, a bottom-up approach.
+                        b) top down design of the model (theory => model): ERM
+
+
+
+ c) Example: Sakila star schema - bunch of tables: inventory, .. => turn it into a star schema with fact table has all the ids from each table with sales on. 
+
+   Fact table: table1_id, table2_id, .. tableN_id, sales_id, sales => that's it! 

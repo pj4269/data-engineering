@@ -1,0 +1,28 @@
+1. go to: 
+ https://console.aws.amazon.com/redshift/
+
+2. Laucnh cluster: 
+
+3. 
+On the Cluster details page, enter the following values and then choose Continue:
+Cluster identifier: Enter redshift-cluster.
+Database name: Enter dev.
+Database port: Enter 5439.
+Master user name: Enter awsuser.
+Master user password and Confirm password: Enter a password for the master user account.
+
+4. Use defaults until: 
+
+VPC security groups: redshift_security_group
+Available IAM roles: myRedshiftRole
+
+5. Launch a cluster
+
+6. Make sure u delete it. (cluster -> delete)
+
+
+exercise steps: 
+
+1. create  redshift table
+2. copy the tables from s3
+3. insert the copied data into redshift tables;

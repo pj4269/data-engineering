@@ -1,0 +1,26 @@
+1. Create ssh to make a secure connection: => EC2 => create key/pair   ; name: 'spark-udacity' 
+
+- yarn = team environment
+
+2. Go to EMR (hadoop service) => select EMR version 5.20; spark 2.4.0; m5 extra large; ec2 key pair: 'spark-udacity'
+3. spark-submit (command to submit the spark)
+- to find the 'which spark-submit'
+- copy and paste the location
+
+         (location)                     (directory of file)
+  /usr/bin/spark-submit --master yarn ./file.py
+
+4. nano file.py  => will edit the python code on the screen
+
+5. to connect to the 'spark-udacity' => click 'notebook' option => choose the emr_default => will create jupyter notebook
+6. from S3 => just copy the path
+
+   df = spark.read.json('s3://micah-bucket-demo1/2018-11-30-events.json')
+   df.persist()
+   df.head()
+
+
+
+ssh -i ~//home/micah/Desktop/udacity/'3. Data Lakes with Spark'/spark-cluster.pem -ND 8157 hadoop@ec2-18-144-50-45.us-west-1.compute.amazonaws.com
+
+7. data skew: partition the data => reduces the chances of a single machine beaing overloaded. 

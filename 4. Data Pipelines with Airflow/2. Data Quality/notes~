@@ -1,0 +1,5 @@
+1. The data lineage of a dataset describes the discrete steps involved in the creation, movement, and calculation of that dataset
+ => tree visualization of a data in Airflow => helps with error messages
+
+2. data partitioning in: time, logical, size
+  time example => modify your SQL statement and add => WHERE end_time > {{{{prev_ds}}}} and end_time < {{{{next_ds}}}} # next_ds= Airflow macro
